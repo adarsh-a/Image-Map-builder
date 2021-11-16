@@ -27,7 +27,7 @@
          wchUIExt.requestResizeFrame(1500);
          function saveMap() {
             var mapResult = document.getElementById("modal-code-result").value;
-            console.log(mapResult);
+
             wchUIExt.getDefinition().then((definition) => {
                 if (definition.elementType === "group") {
                     wchUIExt.setElement({
@@ -46,11 +46,212 @@
                         value: document.getElementById("modal-code-result").value,
                     });
                 }
-            });
+            });           
           }
+
+          function init()
+          {
+             console.log("reading value from acoustic");
+             //var result = '<map name="image-map">'
+              // +'<area target="" alt="" title="shape1" opacity="50" onclickcolor="#25f447"  onhovercolor="#b95050" color="#7428e6" href="" coords="408,205,338,278" shape="rect">'
+              // +'<area target="" alt="" title="shape2" opacity="70" color="#25f447" onclickcolor="#b95050" onhovercolor="#7428e6" href="" coords="161,249,127,323,229,350,277,297,271,244,255,213,221,178,181,176,110,190,86,226,83,253,83,271,88,291,97,304,106,313,117,319,121,322" shape="poly">'
+              // +'<area target="" alt="shape3" title="shape3" opacity="78" color="#cb5757" onclickcolor="#84f056" onhovercolor="#90d0bd" href="" coords="397,415,427,366" shape="rect">'
+              // +'</map>'
+              // +'<img id="50ebcabd-a44e-40eb-916c-dee6c100824f" name="stage-1-dorsal-motor-x-nucleus.png">'
+              ReadAcousticField();
+          }
+
+          function ReadAcousticField()
+          {
+            wchUIExt.getDefinition().then((definition) => {
+               wchUIExt.getElement().then((element) => {
+                   if (definition.elementType === "group") {
+                       if (element.value["imageMapWithCoordinates"]) {
+                           var map = element.value["imageMapWithCoordinates"];
+                           console.log(map);
+                          
+                       }
+                   } else {
+                       if (element.value) {
+                           var elementValue = element.value;    
+                           document.getElementById("result-saved-from-acoustic").value = elementValue;
+                        }
+                   }
+               });
+               // Disable when published
+               if (definition.disabled) {
+                  
+               }
+           });
+          }
+
+
+          function offset(el) {
+            var rect = el.getBoundingClientRect(),
+            scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
+            scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            return { top: rect.top + scrollTop, left: rect.left + scrollLeft }
+        }
+
+          function drawImage()
+          {
+            var savedResult = document.getElementById("result-saved-from-acoustic").value;
+            var newAreas = [];
+            if(savedResult.length > 0)
+            {              
+               $(".image-map-body-container-kki").attr('styles','overflow:hidden');
+               var mapString = savedResult?.split("</map>")?.length > 0 ? savedResult?.split("</map>")[0] : "";
+               var areas = mapString.split('<area');
+
+               for (var areaIndex = 0; areaIndex < areas.length; areaIndex ++)
+               {
+                   var area = "<area" + areas[areaIndex];
+                   var areaElement = new DOMParser().parseFromString(area, "text/xml");      
+                   newAreas.push(areaElement.getElementsByTagName("area")[0]);
+               };
+            }                    
+    
+            
+            console.log(newAreas);
+            var areaList=[];
+            for (var index = 0; index < newAreas.length; index ++)
+            {
+               var area={};
+               if(newAreas[index] != null && typeof newAreas[index] != undefined)
+               {
+                  area.shape = newAreas[index].getAttribute("shape");
+                  area.color = newAreas[index].getAttribute("color");
+                  area.colorOnHover = newAreas[index].getAttribute("onhovercolor");
+                  area.colorOnClick = newAreas[index].getAttribute("onclickcolor");
+                  area.coords = newAreas[index].getAttribute("coords");
+                  area.title = newAreas[index].getAttribute("title");
+                  area.opacity = newAreas[index].getAttribute("opacity");
+                  areaList.push(area);                  
+               } 
+            }            
+
+            var imageSvg = document.querySelector('.image-mapper-svg');
+            var divOffset = offset(imageSvg);
+            
+
+            for (var aIndex = 0; aIndex < areaList.length; aIndex ++)
+            {
+               var activeSelector = 'input[name="im['+aIndex+'][active]"]';
+               var colorSelector = 'input[name="im['+aIndex+'][color]"]';
+               var shapeSelector = 'select[name="im['+aIndex+'][shape]"]';
+               var onhoverSelector = 'input[name="im['+aIndex+'][onhovercolor]"]';
+               var onclickSelector = 'input[name="im['+aIndex+'][onclickcolor]"]';
+               var opacitySelector = 'input[name="im['+aIndex+'][opacity]"]';
+               var titleSelector = 'input[name="im['+aIndex+'][title]"]';
+
+               $(activeSelector).checked = true;
+               $(activeSelector).trigger("change");
+               $(colorSelector).val(areaList[aIndex].color);
+               $(colorSelector).trigger("change");
+               $(shapeSelector).val(areaList[aIndex].shape);
+               $(shapeSelector).trigger("change");
+               $(onhoverSelector).val(areaList[aIndex].colorOnHover);
+               $(onhoverSelector).trigger("change");
+               $(onclickSelector).val(areaList[aIndex].colorOnClick);
+               $(onclickSelector).trigger("change");
+               $(opacitySelector).val(areaList[aIndex].opacity);
+               $(opacitySelector).trigger("change");
+               $(titleSelector).val (areaList[aIndex].title);
+               $(titleSelector).trigger("change");
+               createPoints(areaList[aIndex],divOffset.left, divOffset.top);
+               $(".add-row").trigger("click");
+            }
+
+            var activeSelectorNext = 'input[name="im['+areaList.length +'][active]"]';
+            $(activeSelectorNext).checked = true;
+            $(activeSelectorNext).trigger("change"); 
+            
+            $(".image-map-body-container-kki").attr('styles','overflow:auto');          
+
+
+          }
+
+          var myX, myY, xyOn, myMouseX, myMouseY, offsetX, offsetY,pageX,pageY,screenX,screenY;
+          function getXYPosition(e){
+            myMouseX=(e).clientX;
+            myMouseY=(e).clientY;
+            offsetX = (e).offsetX;
+            offsetY = (e).offsetY;
+            pageX = (e).pageX;
+            pageY = (e).pageY;
+            screenX = (e).screenX;
+            screenY = (e).screenY;
+
+            console.log(e);
+            console.log("clientX is " + myMouseX + "\nclientY is " + myMouseY + "\n offset x "+ offsetX+"\n offset y "+offsetY
+            +"\n Screen X is "+screenX+"\n screen Y is "+ screenY +"\n pageX is "+pageX+"\n pageY is "+pageY);            
+            }
+
+
+            function createPoints(area, xOffset, yOffset)
+            {
+               
+               var coords = area.coords.split(',');
+               var points = [];
+               
+               //if rectangle or polygon
+               if(coords.length % 2 == 0 )
+               {
+
+                  for(var index = 0; index < coords.length; index = index + 2 )
+                  {
+                     var point = {};
+                     if(index + 1 > coords.length)
+                     {
+                        break;
+                     }                  
+                     point.x = coords[index];
+                     point.y = coords[index+1];
+                     points.push(point);  
+                  }
+               }
+         
+               console.log(xOffset, yOffset);
+
+               for(var pointIndex = 0; pointIndex < points.length; pointIndex++)
+               {
+                  var pointerEvent = new PointerEvent({
+                     'offsetX' : parseInt(points[pointIndex].x) + xOffset,
+                     'offsetY' : parseInt(points[pointIndex].y)  + yOffset,
+                     'pointerType': "mouse"             
+                  });
+                  //console.log(ev1);
+
+                  //console.log("X is "+ points[pointIndex].x + " Y is "+ points[pointIndex].y);
+
+                  var mainEvent1 = new MouseEvent('click', {
+                     'view': window,
+                     'bubbles': true,
+                     'cancelable': true,
+                     'currentTarget':'div#image-map.image-mapper',
+                     'delegateTarget':'div#image-map.image-mapper',
+                     'clientX':  parseInt(points[pointIndex].x) + xOffset,
+                     'clientY': parseInt(points[pointIndex].y)  + yOffset,
+                     'originalEvent': pointerEvent,
+                     'pageX':parseInt(points[pointIndex].x) + xOffset,
+                     'pageY':parseInt(points[pointIndex].y)  + yOffset,
+                     'target': 'svg.image-mapper-svg',
+                     'which': 1,
+
+                  });
+
+                  var component = document.getElementsByClassName('image-mapper-svg')[0];
+                  component.dispatchEvent(mainEvent1);
+                  
+                 
+
+               }             
+               
+            }         
+          
       </script>
    </head>
-   <body>
+   <body class="image-map-body-container-kki">
      
       <div class="container">
          <div class="row">
@@ -183,15 +384,24 @@
          </div>
       </div>
       <footer>
-         <div class="container">
-            <div class="row">
-               <div class="col-md-12">
-                  <div id="social"></div>
-               </div>
-            </div>            
-         </div>
+        <input type="hidden" id="result-saved-from-acoustic"></input>
       </footer>
-      <script src="./image-map-asset/app.min.js"></script><script>(function($){ $(document).trigger('init'); })(jQuery);</script>
+      <script src="./image-map-asset/app.min.js"></script>
+      <script>
+
+        window.addEventListener('DOMContentLoaded', init);
+
+        setTimeout(function () {
+            (function($){ $(document).trigger('init'); })(jQuery);            
+        }, 3000);
+
+        setTimeout(function () {
+         drawImage();           
+         }, 5000);
+       
+         //document.onmouseup=getXYPosition;
+
+      </script>
       
    </body>
 </html>
