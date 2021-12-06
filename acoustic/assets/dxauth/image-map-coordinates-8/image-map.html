@@ -54,12 +54,16 @@
           function init()
           {
              console.log("reading value from acoustic");
-             //var result = '<map name="image-map">'
-              // +'<area target="" alt="" title="shape1" opacity="50" onclickcolor="#25f447"  onhovercolor="#b95050" color="#7428e6" href="" coords="408,205,338,278" shape="rect">'
-              // +'<area target="" alt="" title="shape2" opacity="70" color="#25f447" onclickcolor="#b95050" onhovercolor="#7428e6" href="" coords="161,249,127,323,229,350,277,297,271,244,255,213,221,178,181,176,110,190,86,226,83,253,83,271,88,291,97,304,106,313,117,319,121,322" shape="poly">'
-              // +'<area target="" alt="shape3" title="shape3" opacity="78" color="#cb5757" onclickcolor="#84f056" onhovercolor="#90d0bd" href="" coords="397,415,427,366" shape="rect">'
-              // +'</map>'
-              // +'<img id="50ebcabd-a44e-40eb-916c-dee6c100824f" name="stage-1-dorsal-motor-x-nucleus.png">'
+             /*var result = ' <map name="image-map">'+
+                 '<area target="" alt="" title="" opacity="" color="" href="" coords="173,80,269,134" shape="rect"> '+
+                 '<area target="" alt="" title="" opacity="" color="" href="" coords="113,447,169,533" shape="rect">'+
+                 '<area target="" alt="" title="" opacity="" color="" href="" coords="311,400,65" shape="circle">'+  
+                 '<area target="" alt="" title="" opacity="" color="" href="" coords="653,205,638,238,697,261,746,261,778,229,712,201" shape="poly">'+
+                 //'<area target="" alt="" title="" opacity="" color="" href="" coords="881,503,981,679" shape="rect"> '+
+                 '<area target="" alt="" title="" opacity="" color="" href="" coords="671,381,761,535" shape="rect"> </map>'+
+                 '<img id="648ee5af-d371-405f-aad9-1b31a4fcb160" name="imagemap-flowchart.png">';
+               document.getElementById("result-saved-from-acoustic").value = result;
+               */
               ReadAcousticField();
           }
 
@@ -234,18 +238,35 @@
 
                }
          
-               console.log(xOffset, yOffset);
+               console.log("image offset ",xOffset," ", yOffset);
+
+               var xOriginOffset = parseInt($("#x-origin-offset").val());
+               var yOriginOffset = parseInt($("#y-origin-offset").val());
+
+               console.log("origin offset value is", xOriginOffset, yOriginOffset);
+
+               var offsetX = xOffset;
+               var offsetY = yOffset;
+               
+               if(xOriginOffset > 0)
+               {
+                 offsetX = xOffset - xOriginOffset;
+               }
+
+              
+               if(yOriginOffset > 0)
+               {
+                  offsetY = yOffset - yOriginOffset;
+               }
 
                for(var pointIndex = 0; pointIndex < points.length; pointIndex++)
                {
                   var pointerEvent = new PointerEvent({
-                     'offsetX' : parseInt(points[pointIndex].x) + xOffset,
-                     'offsetY' : parseInt(points[pointIndex].y)  + yOffset,
+                     'offsetX' : parseInt(points[pointIndex].x) + offsetX,
+                     'offsetY' : parseInt(points[pointIndex].y) + offsetY,                    
                      'pointerType': "mouse"             
-                  });
-                  //console.log(ev1);
+                  });                 
 
-                  //console.log("X is "+ points[pointIndex].x + " Y is "+ points[pointIndex].y);
 
                   var mainEvent1 = new MouseEvent('click', {
                      'view': window,
@@ -253,15 +274,16 @@
                      'cancelable': true,
                      'currentTarget':'div#image-map.image-mapper',
                      'delegateTarget':'div#image-map.image-mapper',
-                     'clientX':  parseInt(points[pointIndex].x) + xOffset,
-                     'clientY': parseInt(points[pointIndex].y)  + yOffset,
+                     'clientX': parseInt(points[pointIndex].x) + offsetX,
+                     'clientY': parseInt(points[pointIndex].y)  + offsetY,
                      'originalEvent': pointerEvent,
-                     'pageX':parseInt(points[pointIndex].x) + xOffset,
-                     'pageY':parseInt(points[pointIndex].y)  + yOffset,
+                     'pageX':parseInt(points[pointIndex].x) + offsetX,
+                     'pageY':parseInt(points[pointIndex].y)  + offsetY,                                         
                      'target': 'svg.image-mapper-svg',
                      'which': 1,
 
                   });
+                  console.log("clicking at x",points[pointIndex].x , "clicking at y",points[pointIndex].y);
 
                   var component = document.getElementsByClassName('image-mapper-svg')[0];
                   component.dispatchEvent(mainEvent1);
@@ -272,6 +294,54 @@
                
             }         
           
+            function ClickAtOrigin()
+            {
+               console.log("drawing from origin");
+               var imageSvgContainer = document.querySelector('.image-mapper-svg');
+               var divOffset = offset(imageSvgContainer);
+
+               var pointerEvent = new PointerEvent({
+                  'offsetX' : 0,
+                  'offsetY' : 0,
+                  'pointerType': "mouse"             
+               });               
+
+               var mainEvent1 = new MouseEvent('click', {
+                  'view': window,
+                  'bubbles': true,
+                  'cancelable': true,
+                  'currentTarget':'div#image-map.image-mapper',
+                  'delegateTarget':'div#image-map.image-mapper',
+                  'clientX': divOffset.left,
+                  'clientY': divOffset.top,
+                  'originalEvent': pointerEvent,
+                  'pageX':0,
+                  'pageY':0,
+                  'target': 'svg.image-mapper-svg',
+                  'which': 1,
+
+               });
+
+               var component = document.getElementsByClassName('image-mapper-svg')[0];
+               component.dispatchEvent(mainEvent1);
+
+            }
+
+            function extractOriginOffset(value)
+            {
+               console.log("origin offset process started");
+               var elem = $(value);
+               var area = $(elem[0].areas[0]);
+               var coords=area.attr("coords").split(",");
+               var xCoord = coords[0];
+               var yCoord = coords[1];
+
+               $("#x-origin-offset").val(xCoord);
+               $("#y-origin-offset").val(yCoord);
+               //remove current area
+               $("[name='im[0][remove]']").trigger("click");
+
+            }
       </script>
    </head>
    <body class="image-map-body-container-kki">
@@ -319,8 +389,8 @@
                         <th>On Hover Color</th>
                         <th>On Click Color</th>
                         <th>Opacity</th>
-                        <th>Title</th>
-                        <th>Target</th>                        
+                        <th>Content Index</th>
+                        <th>Delete</th>                        
                         <th style="width: 25px"></th>
                      </tr>
                   </thead>
@@ -360,7 +430,8 @@
                   </tbody>
                   <tfoot>
                      <tr>
-                        <th colspan="6" style="text-align: right"><button type="button" class="btn btn-danger btn-sm add-row"><span class="glyphicon glyphicon-plus"></span> Add New Area</button></th>
+                        <th colspan="6" style="text-align: right"><button type="button" class="btn btn-danger btn-sm add-row">
+                           <span class="glyphicon glyphicon-plus"></span> Add New Area</button></th>
                      </tr>
                   </tfoot>
                </table>
@@ -369,7 +440,10 @@
       </div>
       <div class="container toggle-content segment" style="display: none;">
          <div class="row">
-            <div class="col-md-12" style="text-align: center"><button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#modal-code">Show Me The Code!</button>
+            <div class="col-md-12" style="text-align: center">
+               <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#modal-code">
+                  Show Me The Code!
+               </button>
             </div>
          </div>
       </div>      
@@ -385,7 +459,10 @@
                      <input type="text" value="" placeholder="http://..." id="image-mapper-url" class="form-control input-sm">
                      <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span></div>
                </div>
-               <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button> <button type="button" class="btn btn-primary" id="image-mapper-continue">Continue</button></div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> 
+                  <button type="button" class="btn btn-primary" id="image-mapper-continue">Continue</button>
+               </div>
             </div>
          </div>
       </div>
@@ -408,6 +485,11 @@
       </div>
       <footer>
         <input type="hidden" id="result-saved-from-acoustic"></input>
+        <input type="hidden" id="x-origin-offset"></input>
+        <input type="hidden" id="y-origin-offset"></input>
+        <input type="hidden" id="save-initial-response-ready"></input>
+        <input type="hidden" id="save-initial-response" onchange="extractOriginOffset(value)"></input>
+     
       </footer>
       <script src="./image-map-asset/app.min.js"></script>
       <script>
@@ -415,12 +497,25 @@
         window.addEventListener('DOMContentLoaded', init);
 
         setTimeout(function () {
-            (function($){ $(document).trigger('init'); })(jQuery);            
-        }, 3000);
+         (function($){ $(document).trigger('init'); })(jQuery);            
+         }, 3000);
 
         setTimeout(function () {
+         ClickAtOrigin();         
+         document.getElementById("save-initial-response-ready").value = "on";
+         var evt = document.createEvent("HTMLEvents");
+         evt.initEvent("change", false, true); 
+         document.getElementById("save-initial-response-ready").dispatchEvent(evt);
+         //console.log(htmlOutput);
+
          drawImage();           
-         }, 5000);
+         }, 4000);
+
+       
+
+      
+        
+         
        
          //document.onmouseup=getXYPosition;
 

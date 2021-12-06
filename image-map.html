@@ -54,13 +54,15 @@
           function init()
           {
              console.log("reading value from acoustic");
-             //var result = '<map name="image-map">'
+             var result = '<map name="image-map">'
               // +'<area target="" alt="" title="shape1" opacity="50" onclickcolor="#25f447"  onhovercolor="#b95050" color="#7428e6" href="" coords="408,205,338,278" shape="rect">'
               // +'<area target="" alt="" title="shape2" opacity="70" color="#25f447" onclickcolor="#b95050" onhovercolor="#7428e6" href="" coords="161,249,127,323,229,350,277,297,271,244,255,213,221,178,181,176,110,190,86,226,83,253,83,271,88,291,97,304,106,313,117,319,121,322" shape="poly">'
               // +'<area target="" alt="shape3" title="shape3" opacity="78" color="#cb5757" onclickcolor="#84f056" onhovercolor="#90d0bd" href="" coords="397,415,427,366" shape="rect">'
-              // +'</map>'
-              // +'<img id="50ebcabd-a44e-40eb-916c-dee6c100824f" name="stage-1-dorsal-motor-x-nucleus.png">'
-              ReadAcousticField();
+               +'</map>'
+               +'<img id="411385e3-2294-40a2-9930-1ea9393a81c3" name="age-at-unset.png">';
+               document.getElementById("result-saved-from-acoustic").value = result;
+
+              //ReadAcousticField();
           }
 
           function ReadAcousticField()
