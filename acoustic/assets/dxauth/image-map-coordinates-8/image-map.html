@@ -64,6 +64,7 @@
                  '<img id="648ee5af-d371-405f-aad9-1b31a4fcb160" name="imagemap-flowchart.png">';
                document.getElementById("result-saved-from-acoustic").value = result;
                */
+               
               ReadAcousticField();
           }
 
@@ -105,7 +106,7 @@
             var newAreas = [];
             if(savedResult.length > 0)
             {              
-               $(".image-map-body-container-kki").attr('styles','overflow:hidden');
+               $(".image-map-body-container-kki").attr('style','overflow:hidden');
                var mapString = savedResult?.split("</map>")?.length > 0 ? savedResult?.split("</map>")[0] : "";
                var areas = mapString.split('<area');
 
@@ -172,7 +173,7 @@
             $(activeSelectorNext).checked = true;
             $(activeSelectorNext).trigger("change"); 
             
-            $(".image-map-body-container-kki").attr('styles','overflow:auto');          
+            $(".image-map-body-container-kki").attr('style','overflow:auto;width:2000px');          
 
 
           }
@@ -344,7 +345,7 @@
             }
       </script>
    </head>
-   <body class="image-map-body-container-kki">
+   <body class="image-map-body-container-kki" width="15000">
      
       <div class="container">
          <div class="row">
