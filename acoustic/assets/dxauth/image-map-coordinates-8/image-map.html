@@ -62,6 +62,7 @@
                  //'<area target="" alt="" title="" opacity="" color="" href="" coords="881,503,981,679" shape="rect"> '+
                  '<area target="" alt="" title="" opacity="" color="" href="" coords="671,381,761,535" shape="rect"> </map>'+
                  '<img id="648ee5af-d371-405f-aad9-1b31a4fcb160" name="imagemap-flowchart.png">';
+                 
                document.getElementById("result-saved-from-acoustic").value = result;
                */
                
@@ -173,7 +174,7 @@
             $(activeSelectorNext).checked = true;
             $(activeSelectorNext).trigger("change"); 
             
-            $(".image-map-body-container-kki").attr('style','overflow:auto;width:2000px');          
+            $(".image-map-body-container-kki").attr('style','overflow:auto');          
 
 
           }
@@ -345,9 +346,9 @@
             }
       </script>
    </head>
-   <body class="image-map-body-container-kki" width="15000">
+   <body class="image-map-body-container-kki">
      
-      <div class="container">
+      <div class="container image-container">
          <div class="row">
             <div class="col-md-12">               
                <div class="step">
@@ -369,7 +370,7 @@
       <div class="container toggle-content" style="display: none;">
          <div class="row">
             <div class="col-md-12">
-               <div class="container">
+               <div class="container kki-container">
                   <div class="row">
                      <div class="col-md-12" id="image-map-wrapper">
                         <div id="image-map-container">
